@@ -1,5 +1,6 @@
 package edu.yale.library.fileservice;
 
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
@@ -9,9 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -19,6 +18,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class DBManager {
 
     private final static Logger logger = getLogger(DBManager.class);
+
+    //TODO externalize
+    public static final String PATH = "\\\\storage.yale.edu\\home\\fc_Beinecke-807001-YUL\\DL images\\IMAGES-ARCHIVE\\Romanov TIFFS";
 
     private static Connection conn; //TODO
 
@@ -50,10 +52,10 @@ public class DBManager {
         try {
             getConnection();
             final Statement stmt = conn.createStatement();
-            final ResultSet rs = stmt.executeQuery("select * from FILES"); //TODO
+            final ResultSet rs = stmt.executeQuery("select identifier, path from FILES"); //TODO
 
             while (rs.next()) {
-                results.add(rs.getString(1)); //TODO check
+                results.add(rs.getString(1) + ":" + rs.getString(2)); //TODO check
             }
 
             stmt.close();
@@ -76,7 +78,7 @@ public class DBManager {
         final Statement stmt = conn.createStatement();
 
         try {
-            final String createTable = "CREATE TABLE FILES (identifier INTEGER not NULL, path VARCHAR(255))"; //TODO len
+            final String createTable = "CREATE TABLE FILES (identifier VARCHAR(255) not NULL, path VARCHAR(500))"; //TODO len
             stmt.executeUpdate(createTable);
             logger.debug("Created table in given database...");
             stmt.close();
@@ -87,8 +89,9 @@ public class DBManager {
         logger.debug("Inserting records into the table...");
 
         final Crawler crawler = new Crawler();
-        //final Multimap<String, String> map = crawler.doIndex("D:\\nikita");  // todo externalize
-        final Multimap<String, String> map = crawler.doIndex("\\\\storage.yale.edu\\home\\ladybird-801001-yul\\ladybird2");  // todo externalize
+        //final Multimap<String, String> map = crawler.doIndex("D:\\nikita");
+        final Multimap<String, String> map =
+                crawler.doIndex(PATH);
 
         logger.debug("Map is:{0}", map.toString());
 
@@ -99,10 +102,10 @@ public class DBManager {
         for (final String key : keys) {
             final List<String> path = new ArrayList<String>(map.get(key));
             for (String s : path) {
-                final String id = key.replace(".txt", ""); //TODO other extensions and multiple dots, and what if no numbers
+                final String id = stripExtension(s); //TODO multiple dots (?), only .tifs, and what if no numbers
 
                 try {
-                    final String sql = "INSERT INTO FILES VALUES (" + Integer.parseInt(id) + ", '" + s +"')";
+                    final String sql = "INSERT INTO FILES VALUES (" + id + ", '" + s +"')";
                     stmt2.executeUpdate(sql);   //TODO batch insert check
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
@@ -124,6 +127,10 @@ public class DBManager {
         conn.close();
     }
 
+    public String stripExtension(String f) {
+        return FilenameUtils.removeExtension(f);
+    }
+
     public void getConnection() {
         try {
             Class.forName("org.h2.Driver");
@@ -140,6 +147,5 @@ public class DBManager {
             logger.error("Error closing connection", e);
         }
     }
-
 }
 

@@ -2,6 +2,7 @@ package edu.yale.library.fileservice;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -19,35 +20,24 @@ public class Crawler {
 
 
     public Multimap<String, String> doIndex(final String path) throws IOException {
-        logger.debug("Path exists:" + new File(path).exists());
-        logger.debug("For path:" + path);
+        logger.debug("Path:{} exists:{}", path, new File(path).exists());
         index(new File(path));
-        logger.debug("Map size:{}", map.size());
+        logger.debug("Computed map size:{}", map.size());
         return map;
     }
 
     private void index(final File sourceFile) throws IOException {
         if (sourceFile.isDirectory()) {
             final String absPath = sourceFile.getAbsolutePath();
-
             logger.debug("Looking in:{}", absPath);
+            final File[] paths = sourceFile.listFiles(new AcceptableFiles());
 
-            if (absPath.contains("CaptureOne") || absPath.contains(".DS_Store") || sourceFile.getName().startsWith(".") ) { // TODO
-                return;
-            }
-            final String[] paths = sourceFile.list();
-
-            for (final String filePath : paths) {
-                final File src = new File(sourceFile, filePath);
-                index(src);
+            for (final File filePath : paths) {
+                index(filePath);
             }
         } else { // add file object to map
             final String fileName = sourceFile.getName();
             final String absPath = sourceFile.getAbsolutePath();
-
-            if (fileName.startsWith(".DS_Store") || fileName.startsWith("._.DS_Store")) {
-                return;
-            }
             map.put(fileName, absPath);
         }
     }
