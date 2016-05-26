@@ -7,6 +7,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.PathParam;
 
+import java.util.List;
+
 import static org.slf4j.LoggerFactory.getLogger;
 
 /**
@@ -23,15 +25,14 @@ public class FileService {
         logger.debug("GET request for:{}", msg);
         DBManager dbManager = new DBManager();
         try {
-            dbManager.test(null);
+            dbManager.insert();
+            List<String> s = dbManager.test(msg);
+            return Response.status(200).entity(s).build();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error:", e);
         }
-        final String result = "Got request for path=" + msg;
-        return Response.status(200).entity(result).build();
+        return Response.status(404).build(); //TODO
     }
-
-
 }
 
 

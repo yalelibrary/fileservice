@@ -6,13 +6,9 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+public class PropsUtil {
 
-public class PropertiesConfigurationUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(PropertiesConfigurationUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(PropsUtil.class);
 
     /**
      * for general props

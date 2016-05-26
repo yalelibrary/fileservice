@@ -3,11 +3,12 @@ package edu.yale.library.fileservice;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -15,53 +16,87 @@ public class DBManager {
 
     private final static Logger logger = getLogger(DBManager.class);
 
+    private static Connection conn; //TODO
 
-    public static void test(String[] a)
-            throws Exception {
+    static boolean INIT = false; //TODO
 
-        Class.forName("org.h2.Driver");
-        Connection conn = DriverManager.
-                getConnection("jdbc:h2:~/IdeaProjects/log_service/test", "sa", "");
-        // add application code here
-
-        //STEP 4: Execute a query
-        Statement stmt = conn.createStatement();
-
-        String sql = null;
+    public List<String> test(String fileName) {
+        final List<String> results = new ArrayList<String>();
         try {
-            sql = "CREATE TABLE STUDENTS " +
-                    "(studentid INTEGER not NULL, " +
-                    " name VARCHAR(255))";
+            getConnection();
+            final Statement stmt = conn.createStatement();
+            final ResultSet rs = stmt.executeQuery("select * from FILES where identifier=" + fileName); //TODO
 
-            stmt.executeUpdate(sql);
-            logger.debug("Created table in given database...");
+            while (rs.next()) {
+                results.add(rs.getString(1)); //TODO check
+            }
+
+            stmt.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error", e);
+        } finally {
+            closeConnection();
         }
 
-        //STEP 4: Execute a query
-        System.out.println("Inserting records into the table...");
-        stmt = conn.createStatement();
+        return results;
+    }
 
-        sql = "INSERT INTO STUDENTS VALUES (123456789, 'Zara')";
+    public void insert()throws Exception {
 
-        for (int i = 0; i < 500000; i++) {
-            stmt.executeUpdate(sql);
+        if (INIT) {
+            return;
+        }
+
+        getConnection();
+        final Statement stmt = conn.createStatement();
+
+        try {
+            final String createTable = "CREATE TABLE FILES (identifier INTEGER not NULL, path VARCHAR(255))"; //TODO
+            stmt.executeUpdate(createTable);
+            logger.debug("Created table in given database...");
+            stmt.close();
+        } catch (SQLException e) {
+            logger.error("Error", e);
+        }
+
+        logger.debug("Inserting records into the table...");
+
+        final Statement stmt2 = conn.createStatement();
+        final String sql = "INSERT INTO FILES VALUES (123456789, '/tmp')";
+
+        for (int i = 0; i < 5; i++) { //TODO
+            stmt2.executeUpdate(sql);
         }
 
         logger.debug("Inserted records into the table...");
 
-        ResultSet rs;
-        rs = stmt.executeQuery("select count(*) from STUDENTS");
+        final ResultSet rs = stmt2.executeQuery("select count(*) from FILES");
+
         while (rs.next()) {
-            System.out.println(rs.getInt(1));
+            logger.debug("Insert count:{}", rs.getInt(1));
         }
 
-        Date d = new Date(System.currentTimeMillis());
-        System.out.println("Done at:" + d.toString());
-
-
+        stmt2.close();
+        INIT = true;
         conn.close();
     }
+
+    public void getConnection() {
+        try {
+            Class.forName("org.h2.Driver");
+            conn = DriverManager.getConnection("jdbc:h2:D:/file_service/test", "sa", ""); //TODO db name, etc.
+        } catch (Exception e) {
+            logger.error("Error getting connection", e);
+        }
+    }
+
+    public void closeConnection() {
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            logger.error("Error closing connection", e);
+        }
+    }
+
 }
 
