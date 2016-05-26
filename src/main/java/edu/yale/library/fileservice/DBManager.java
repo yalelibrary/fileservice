@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -51,7 +53,7 @@ public class DBManager {
         final Statement stmt = conn.createStatement();
 
         try {
-            final String createTable = "CREATE TABLE FILES (identifier INTEGER not NULL, path VARCHAR(255))"; //TODO
+            final String createTable = "CREATE TABLE FILES (identifier INTEGER not NULL, path VARCHAR(255))"; //TODO len
             stmt.executeUpdate(createTable);
             logger.debug("Created table in given database...");
             stmt.close();
@@ -61,9 +63,22 @@ public class DBManager {
 
         logger.debug("Inserting records into the table...");
 
+        Crawler crawler = new Crawler();
+        Map<String, String> map = crawler.doIndex("D:\\nikita");  // todo externalize
+        Set<String> keys = map.keySet();
+
         final Statement stmt2 = conn.createStatement();
-        final String sql = "INSERT INTO FILES VALUES (123456789, 'D:\\nikita\\123456789.txt')";
-        stmt2.executeUpdate(sql);
+
+        for (String key : keys) {
+            String path = map.get(key);
+            String id = key.replace(".txt", ""); //TODO other extensions and multiple dots, and what if no numbers
+            String sql = "INSERT INTO FILES VALUES (" + Integer.parseInt(id) + ", '" + path +"')";
+            stmt2.executeUpdate(sql);   //TODO batch insert check
+        }
+
+
+        //final String sql = "INSERT INTO FILES VALUES (123456789, 'D:\\nikita\\123456789.txt')";
+        //stmt2.executeUpdate(sql);
 
         logger.debug("Inserted records into the table...");
 
