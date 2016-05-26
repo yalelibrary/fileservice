@@ -21,6 +21,12 @@ public class FileService {
     @Path("/{param}")
     public Response get(@PathParam("param") String msg) {
         logger.debug("GET request for:{}", msg);
+        DBManager dbManager = new DBManager();
+        try {
+            dbManager.test(null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         final String result = "Got request for path=" + msg;
         return Response.status(200).entity(result).build();
     }
