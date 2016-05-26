@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import com.google.common.collect.Multimap;
@@ -22,15 +23,17 @@ public class DBManager {
     //TODO externalize
     public static final String PATH = "\\\\storage.yale.edu\\home\\fc_Beinecke-807001-YUL\\DL images\\IMAGES-ARCHIVE\\Romanov TIFFS";
 
-    private static Connection conn; //TODO
-
-    static boolean INIT = false; //TODO
+    private static Connection conn; //TODO check
 
     public List<String> get(String fileName) {
         final List<String> results = new ArrayList<String>();
         try {
-            getConnection();
+            if (!getConnection()) {
+                return Collections.emptyList();
+            }
+
             final Statement stmt = conn.createStatement();
+
             final ResultSet rs = stmt.executeQuery("select path from FILES where identifier=" + fileName); //TODO
 
             while (rs.next()) {
@@ -50,8 +53,12 @@ public class DBManager {
     public List<String> getAll() {
         final List<String> results = new ArrayList<String>();
         try {
-            getConnection();
+            if (!getConnection()) {
+                return Collections.emptyList();
+            }
+
             final Statement stmt = conn.createStatement();
+
             final ResultSet rs = stmt.executeQuery("select identifier, path from FILES"); //TODO
 
             while (rs.next()) {
@@ -62,82 +69,124 @@ public class DBManager {
         } catch (SQLException e) {
             logger.error("Error", e);
         } finally {
-            closeConnection();
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                logger.error("Error", e);
+            }
         }
 
         return results;
     }
 
-    public void insert()throws Exception {
-
-        if (INIT) {
+    public void init() throws Exception {
+        if (!getConnection()) {
             return;
         }
 
-        getConnection();
-        final Statement stmt = conn.createStatement();
-
-        try {
+        try (final Statement stmt = conn.createStatement();){
             final String createTable = "CREATE TABLE FILES (identifier VARCHAR(255) not NULL, path VARCHAR(500))"; //TODO len
             stmt.executeUpdate(createTable);
             logger.debug("Created table in given database...");
-            stmt.close();
         } catch (SQLException e) {
             logger.error("Error", e);
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                logger.error("Error", e);
+            }
+        }
+
+    }
+
+    public void insert() throws Exception {
+
+        if (!tableExists()) {
+            logger.debug("Initializing table");
+            init();
+        }
+
+        if (!getConnection()) {
+            return;
         }
 
         logger.debug("Inserting records into the table...");
 
         final FileCrawler fileCrawler = new FileCrawler();
-        //final Multimap<String, String> map = crawler.getIndex("D:\\nikita");
-        final Multimap<String, String> map =
-                fileCrawler.getIndex(PATH);
 
-        logger.debug("Map is:{0}", map.toString());
+        final Multimap<String, String> map = fileCrawler.getIndex(PATH);
 
         final Set<String> keys = map.keySet();
 
-        final Statement stmt2 = conn.createStatement();
 
-        for (final String key : keys) {
-            final List<String> path = new ArrayList<String>(map.get(key));
-            for (String s : path) {
-                final String id = stripExtension(s); //TODO multiple dots (?), only .tifs, and what if no numbers
+        try (final Statement stmt = conn.createStatement()) {
 
-                try {
-                    final String sql = "INSERT INTO FILES VALUES (" + id + ", '" + s +"')";
-                    stmt2.executeUpdate(sql);   //TODO batch insert check
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                    continue;
+            for (final String key : keys) {
+                final List<String> path = new ArrayList<>(map.get(key));
+                for (String s : path) {
+                    final String id = stripExtension(s); //TODO multiple dots (?), only .tifs, and what if no numbers
+
+                    try {
+                        final String sql = "INSERT INTO FILES VALUES (" + id + ", '" + s + "')";
+                        stmt.executeUpdate(sql);   //TODO batch insert check
+                    } catch (Exception e) {
+                        logger.error("Error inserting:{}", s, e);
+                    }
                 }
+            }
+        } catch (SQLException e) {
+            logger.error("Error", e);
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                logger.error("Error", e);
             }
         }
 
-        //"INSERT INTO FILES VALUES (123456789, 'D:\\nikita\\123456789.txt')";
+    }
 
-        final ResultSet rs = stmt2.executeQuery("select count(*) from FILES");
+    public boolean tableExists() {
 
-        while (rs.next()) {
-            logger.debug("Insert count:{}", rs.getInt(1));
+        if (!getConnection()) {
+            return false;
         }
 
-        stmt2.close();
-        INIT = true;
-        conn.close();
+        try (final Statement stmt2 = conn.createStatement(); final ResultSet rs = stmt2.executeQuery("select count(*) from FILES");) {
+            while (rs.next()) {
+                int count = rs.getInt(1);
+
+                if (count >= 0) {
+                    return true;
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error", e);
+        } finally {
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                logger.error("Error", e);
+            }
+        }
+
+        return false;
     }
 
     public String stripExtension(String f) {
         return FilenameUtils.removeExtension(f);
     }
 
-    public void getConnection() {
+    public boolean getConnection() {
         try {
             Class.forName("org.h2.Driver");
             conn = DriverManager.getConnection("jdbc:h2:D:/file_service/test", "sa", ""); //TODO db name, etc.
         } catch (Exception e) {
             logger.error("Error getting connection", e);
+            return false;
         }
+        return true;
     }
 
     public void closeConnection() {
