@@ -2,7 +2,7 @@
 <!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
-    <class name="edu.yale.library.logservice.LoggingEvent" table="logging_event" schema="dbo" catalog="log_service">
+    <class name="edu.yale.library.fileservice.LoggingEvent" table="logging_event" schema="dbo" catalog="log_service">
 
         <id name="eventId" type="java.lang.Integer">
             <column name="event_id" />

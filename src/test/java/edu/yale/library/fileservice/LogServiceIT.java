@@ -1,4 +1,4 @@
-package edu.yale.library.logservice;
+package edu.yale.library.fileservice;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;

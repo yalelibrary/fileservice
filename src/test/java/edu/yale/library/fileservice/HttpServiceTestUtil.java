@@ -1,4 +1,4 @@
-package edu.yale.library.logservice;
+package edu.yale.library.fileservice;
 
 import java.util.concurrent.TimeUnit;
 

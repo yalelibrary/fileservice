@@ -1,6 +1,6 @@
-##Log Service
+##File Service
 
-Java web service that logs events to database.
+Crawler/indexing web service.
 
 ###Build
 ```
@@ -8,7 +8,9 @@ mvn clean install
 ```
 
 ###Test
+
+After renaming the war file to fileservice:
+
 ```
-curl http://localhost:8080/logservice/rest/log/test
-t curl -X POST --data "param=yale" http://localhost:8080/logservice/rest/log/test
+curl -X GET http://localhost:8080/fileservice/rest/search/test22
 ```
