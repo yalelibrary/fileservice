@@ -25,8 +25,21 @@ public class FileService {
         logger.debug("GET request for:{}", msg);
         DBManager dbManager = new DBManager();
         try {
-            dbManager.insert();
-            List<String> s = dbManager.test(msg);
+            List<String> s = dbManager.get(msg);
+            return Response.status(200).entity(s).build();
+        } catch (Exception e) {
+            logger.error("Error:", e);
+        }
+        return Response.status(404).build(); //TODO
+    }
+
+    //TODO
+    @GET
+    @Path("/get")
+    public Response getAll() {
+        DBManager dbManager = new DBManager();
+        try {
+            List<String> s = dbManager.getAll();
             return Response.status(200).entity(s).build();
         } catch (Exception e) {
             logger.error("Error:", e);

@@ -1,5 +1,7 @@
 package edu.yale.library.fileservice;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -11,12 +13,16 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class Crawler {
 
-    private final static Logger logger = getLogger(DBManager.class);
+    private final static Logger logger = getLogger(Crawler.class);
 
-    private Map<String, String> map = new HashMap<String, String>(); //FIXME replace with multimap
+    Multimap<String, String> map = ArrayListMultimap.create();
 
-    public Map<String, String> doIndex(final String path) throws IOException {
+
+    public Multimap<String, String> doIndex(final String path) throws IOException {
+        logger.debug("Path exists:" + new File(path).exists());
+        logger.debug("For path:" + path);
         index(new File(path));
+        logger.debug("Map size:{}", map.size());
         return map;
     }
 
@@ -24,7 +30,7 @@ public class Crawler {
         if (sourceFile.isDirectory()) {
             final String absPath = sourceFile.getAbsolutePath();
 
-            logger.info("Looking in:{}", absPath);
+            logger.debug("Looking in:{}", absPath);
 
             if (absPath.contains("CaptureOne") || absPath.contains(".DS_Store") || sourceFile.getName().startsWith(".") ) { // TODO
                 return;

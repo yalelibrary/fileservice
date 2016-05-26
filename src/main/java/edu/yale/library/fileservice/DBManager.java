@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -22,12 +24,33 @@ public class DBManager {
 
     static boolean INIT = false; //TODO
 
-    public List<String> test(String fileName) {
+    public List<String> get(String fileName) {
         final List<String> results = new ArrayList<String>();
         try {
             getConnection();
             final Statement stmt = conn.createStatement();
             final ResultSet rs = stmt.executeQuery("select path from FILES where identifier=" + fileName); //TODO
+
+            while (rs.next()) {
+                results.add(rs.getString(1)); //TODO check
+            }
+
+            stmt.close();
+        } catch (SQLException e) {
+            logger.error("Error", e);
+        } finally {
+            closeConnection();
+        }
+
+        return results;
+    }
+
+    public List<String> getAll() {
+        final List<String> results = new ArrayList<String>();
+        try {
+            getConnection();
+            final Statement stmt = conn.createStatement();
+            final ResultSet rs = stmt.executeQuery("select * from FILES"); //TODO
 
             while (rs.next()) {
                 results.add(rs.getString(1)); //TODO check
@@ -63,24 +86,32 @@ public class DBManager {
 
         logger.debug("Inserting records into the table...");
 
-        Crawler crawler = new Crawler();
-        Map<String, String> map = crawler.doIndex("D:\\nikita");  // todo externalize
-        Set<String> keys = map.keySet();
+        final Crawler crawler = new Crawler();
+        //final Multimap<String, String> map = crawler.doIndex("D:\\nikita");  // todo externalize
+        final Multimap<String, String> map = crawler.doIndex("\\\\storage.yale.edu\\home\\ladybird-801001-yul\\ladybird2");  // todo externalize
+
+        logger.debug("Map is:{0}", map.toString());
+
+        final Set<String> keys = map.keySet();
 
         final Statement stmt2 = conn.createStatement();
 
-        for (String key : keys) {
-            String path = map.get(key);
-            String id = key.replace(".txt", ""); //TODO other extensions and multiple dots, and what if no numbers
-            String sql = "INSERT INTO FILES VALUES (" + Integer.parseInt(id) + ", '" + path +"')";
-            stmt2.executeUpdate(sql);   //TODO batch insert check
+        for (final String key : keys) {
+            final List<String> path = new ArrayList<String>(map.get(key));
+            for (String s : path) {
+                final String id = key.replace(".txt", ""); //TODO other extensions and multiple dots, and what if no numbers
+
+                try {
+                    final String sql = "INSERT INTO FILES VALUES (" + Integer.parseInt(id) + ", '" + s +"')";
+                    stmt2.executeUpdate(sql);   //TODO batch insert check
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    continue;
+                }
+            }
         }
 
-
-        //final String sql = "INSERT INTO FILES VALUES (123456789, 'D:\\nikita\\123456789.txt')";
-        //stmt2.executeUpdate(sql);
-
-        logger.debug("Inserted records into the table...");
+        //"INSERT INTO FILES VALUES (123456789, 'D:\\nikita\\123456789.txt')";
 
         final ResultSet rs = stmt2.executeQuery("select count(*) from FILES");
 
