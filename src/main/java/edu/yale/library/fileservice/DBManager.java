@@ -88,10 +88,10 @@ public class DBManager {
 
         logger.debug("Inserting records into the table...");
 
-        final Crawler crawler = new Crawler();
-        //final Multimap<String, String> map = crawler.doIndex("D:\\nikita");
+        final FileCrawler fileCrawler = new FileCrawler();
+        //final Multimap<String, String> map = crawler.getIndex("D:\\nikita");
         final Multimap<String, String> map =
-                crawler.doIndex(PATH);
+                fileCrawler.getIndex(PATH);
 
         logger.debug("Map is:{0}", map.toString());
 
