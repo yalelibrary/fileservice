@@ -25,7 +25,7 @@ public class DBManager {
         try {
             getConnection();
             final Statement stmt = conn.createStatement();
-            final ResultSet rs = stmt.executeQuery("select * from FILES where identifier=" + fileName); //TODO
+            final ResultSet rs = stmt.executeQuery("select path from FILES where identifier=" + fileName); //TODO
 
             while (rs.next()) {
                 results.add(rs.getString(1)); //TODO check
@@ -62,11 +62,8 @@ public class DBManager {
         logger.debug("Inserting records into the table...");
 
         final Statement stmt2 = conn.createStatement();
-        final String sql = "INSERT INTO FILES VALUES (123456789, '/tmp')";
-
-        for (int i = 0; i < 5; i++) { //TODO
-            stmt2.executeUpdate(sql);
-        }
+        final String sql = "INSERT INTO FILES VALUES (123456789, 'D:\\nikita\\123456789.txt')";
+        stmt2.executeUpdate(sql);
 
         logger.debug("Inserted records into the table...");
 
