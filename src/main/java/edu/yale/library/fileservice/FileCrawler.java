@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -21,6 +22,11 @@ public class FileCrawler {
     private final Multimap<String, String> map = ArrayListMultimap.create();
 
     public Multimap<String, String> getIndex() throws IOException {
+        final File f = new File(path);
+
+        if (!f.exists()) {
+            return map;
+        }
         logger.debug("Path:{} exists:{}", path, new File(path).exists());
         index(new File(path));
         logger.debug("Computed file map size:{}", map.size());

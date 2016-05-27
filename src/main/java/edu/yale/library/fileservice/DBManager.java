@@ -128,7 +128,16 @@ public class DBManager {
 
         final FileCrawler fileCrawler = new FileCrawler(path);
         final Multimap<String, String> map = fileCrawler.getIndex();
+
+        if (map.size() == 0) {
+            return;
+        }
+
         final Set<String> keys = map.keySet();
+
+        if (conn.isClosed()) {
+            return;
+        }
 
         try (final Statement stmt = conn.createStatement()) {
 
@@ -138,7 +147,7 @@ public class DBManager {
                     final String id = extractFileName(key); //TODO multiple dots (?), only .tifs, and what if no numbers
 
                     try {
-                        logger.debug("Inserting id:{} path:{}", key, id);
+                        logger.debug("Inserting id:{} path:{}", id, s);
                         final String sql = "INSERT INTO FILES VALUES ('" + id + "', '" + s + "')";
                         stmt.executeUpdate(sql);   //TODO batch insert check
                     } catch (Exception e) {
