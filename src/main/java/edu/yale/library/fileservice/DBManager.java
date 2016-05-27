@@ -3,6 +3,7 @@ package edu.yale.library.fileservice;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -21,6 +22,8 @@ public class DBManager {
     private final static Logger logger = getLogger(DBManager.class);
 
     private static Connection conn; //TODO check
+
+    private String path = PropsUtil.getProperty("PATH");
 
     public List<String> get(final String fileName) {
         final List<String> results = new ArrayList<>();
@@ -111,7 +114,7 @@ public class DBManager {
 
         logger.debug("Inserting records into the table...");
 
-        final FileCrawler fileCrawler = new FileCrawler(PropsUtil.getProperty("PATH"));
+        final FileCrawler fileCrawler = new FileCrawler(path);
         final Multimap<String, String> map = fileCrawler.getIndex();
         final Set<String> keys = map.keySet();
 
@@ -120,10 +123,10 @@ public class DBManager {
             for (final String key : keys) {
                 final List<String> path = new ArrayList<>(map.get(key));
                 for (String s : path) {
-                    final String id = stripExtension(s); //TODO multiple dots (?), only .tifs, and what if no numbers
+                    final String id = extractFileName(key); //TODO multiple dots (?), only .tifs, and what if no numbers
 
                     try {
-                        logger.debug("Inserting id:{} path:{}", id, s);
+                        logger.debug("Inserting id:{} path:{}", key, id);
                         final String sql = "INSERT INTO FILES VALUES ('" + id + "', '" + s + "')";
                         stmt.executeUpdate(sql);   //TODO batch insert check
                     } catch (Exception e) {
@@ -169,10 +172,11 @@ public class DBManager {
         return false;
     }
 
-    public String stripExtension(String f) {
+    // e.g., instead of /tmp/a.tif store a as the key
+    public String extractFileName(String f) {
         String noExtension = FilenameUtils.removeExtension(f);
-        String fileName = noExtension.replace(PropsUtil.getProperty("PATH"), "").replaceAll("/", "").trim();
-        return fileName;
+        //String fileName = noExtension.replace(path, "").replaceAll(File.separator, "").trim();
+        return noExtension;
     }
 
     public boolean getConnection() {
