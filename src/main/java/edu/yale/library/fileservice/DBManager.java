@@ -27,6 +27,11 @@ public class DBManager {
     private String path = PropsUtil.getProperty("PATH");
 
     public List<String> get(final String fileName) {
+        if (!valid(fileName)) {
+            logger.error("Invalid filename requested:{}", fileName);
+            return Collections.emptyList();
+        }
+
         final List<String> results = new ArrayList<>();
         try {
             if (!getConnection()) {
@@ -106,7 +111,6 @@ public class DBManager {
                 logger.error("Error", e);
             }
         }
-
     }
 
     public void insert() throws Exception {
@@ -204,6 +208,10 @@ public class DBManager {
         } catch (SQLException e) {
             logger.error("Error closing db connection", e);
         }
+    }
+
+    private boolean valid(String s) {
+        return s.matches("^[0-9]+$"); // only numbers allowed //TODO might have to accommodate others
     }
 }
 
