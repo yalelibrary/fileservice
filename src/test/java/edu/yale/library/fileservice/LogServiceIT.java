@@ -5,6 +5,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 
 import org.apache.http.message.BasicNameValuePair;
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -47,6 +48,7 @@ public class LogServiceIT extends AbstractWarTest {
     public static void tearDown() {
     }
 
+    @Ignore
     @Test
     public void testGET() throws Exception {
         HttpServiceTestUtil httpServiceTestUtil = new HttpServiceTestUtil();
@@ -54,20 +56,6 @@ public class LogServiceIT extends AbstractWarTest {
         final HttpResponse response0 = httpServiceTestUtil.httpClient.execute(getMethod0);
         assertNotNull(response0);
         assertEquals(IOUtils.toString(response0.getEntity().getContent()), 200,
-                response0.getStatusLine().getStatusCode());
-    }
-
-
-    @Test
-    public void testPOST() throws Exception {
-        HttpServiceTestUtil httpServiceTestUtil = new HttpServiceTestUtil();
-        final HttpPost post = httpServiceTestUtil.doPOST(HTTP_SERVICE);
-        List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-        nvps.add(new BasicNameValuePair("yale", "secret"));
-        post.setEntity(new UrlEncodedFormEntity(nvps));
-        final HttpResponse response0 = httpServiceTestUtil.httpClient.execute(post);
-        assertNotNull(response0);
-        assertEquals(IOUtils.toString(response0.getEntity().getContent()), 500,
                 response0.getStatusLine().getStatusCode());
     }
 

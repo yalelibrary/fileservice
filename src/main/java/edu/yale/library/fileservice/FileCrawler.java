@@ -24,6 +24,7 @@ public class FileCrawler {
         logger.debug("Path:{} exists:{}", path, new File(path).exists());
         index(new File(path));
         logger.debug("Computed file map size:{}", map.size());
+        logger.debug("Computed map:{}", map.toString());
         return map;
     }
 

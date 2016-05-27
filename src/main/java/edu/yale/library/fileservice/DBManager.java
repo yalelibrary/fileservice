@@ -123,7 +123,8 @@ public class DBManager {
                     final String id = stripExtension(s); //TODO multiple dots (?), only .tifs, and what if no numbers
 
                     try {
-                        final String sql = "INSERT INTO FILES VALUES (" + id + ", '" + s + "')";
+                        logger.debug("Inserting id:{} path:{}", id, s);
+                        final String sql = "INSERT INTO FILES VALUES ('" + id + "', '" + s + "')";
                         stmt.executeUpdate(sql);   //TODO batch insert check
                     } catch (Exception e) {
                         logger.error("Error inserting:{}", s, e);
@@ -169,7 +170,9 @@ public class DBManager {
     }
 
     public String stripExtension(String f) {
-        return FilenameUtils.removeExtension(f);
+        String noExtension = FilenameUtils.removeExtension(f);
+        String fileName = noExtension.replace(PropsUtil.getProperty("PATH"), "").replaceAll("/", "").trim();
+        return fileName;
     }
 
     public boolean getConnection() {
