@@ -92,7 +92,7 @@ public class DBManager {
         return results;
     }
 
-    public void init() throws Exception {
+    public synchronized void init() throws Exception {
         if (!getConnection()) {
             logger.debug("Unable to get connection");
             return;
@@ -113,7 +113,7 @@ public class DBManager {
         }
     }
 
-    public void insert() throws Exception {
+    public synchronized void insert() throws Exception {
         if (!tableExists()) {
             logger.debug("Initializing table");
             init();
