@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,7 +34,14 @@ public class DBManager {
             }
 
             final Statement stmt = conn.createStatement();
-            final ResultSet rs = stmt.executeQuery("select path from FILES where identifier=" + fileName); //TODO
+            logger.debug("Searching for:{}", fileName);
+
+            String sql = "select path from FILES where identifier=?";
+
+            PreparedStatement sqlState = conn.prepareStatement(sql);
+            sqlState.setString(1, fileName);
+
+            final ResultSet rs = sqlState.executeQuery();
 
             while (rs.next()) {
                 results.add(rs.getString(1)); //TODO check
