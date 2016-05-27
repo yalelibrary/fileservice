@@ -20,20 +20,16 @@ public class DBManager {
 
     private final static Logger logger = getLogger(DBManager.class);
 
-    //TODO externalize
-    public static final String PATH = "\\\\storage.yale.edu\\home\\fc_Beinecke-807001-YUL\\DL images\\IMAGES-ARCHIVE\\Romanov TIFFS";
-
     private static Connection conn; //TODO check
 
-    public List<String> get(String fileName) {
-        final List<String> results = new ArrayList<String>();
+    public List<String> get(final String fileName) {
+        final List<String> results = new ArrayList<>();
         try {
             if (!getConnection()) {
                 return Collections.emptyList();
             }
 
             final Statement stmt = conn.createStatement();
-
             final ResultSet rs = stmt.executeQuery("select path from FILES where identifier=" + fileName); //TODO
 
             while (rs.next()) {
@@ -51,9 +47,10 @@ public class DBManager {
     }
 
     public List<String> getAll() {
-        final List<String> results = new ArrayList<String>();
+        final List<String> results = new ArrayList<>();
         try {
             if (!getConnection()) {
+                logger.debug("Unable to get connection");
                 return Collections.emptyList();
             }
 
@@ -81,10 +78,11 @@ public class DBManager {
 
     public void init() throws Exception {
         if (!getConnection()) {
+            logger.debug("Unable to get connection");
             return;
         }
 
-        try (final Statement stmt = conn.createStatement();){
+        try (final Statement stmt = conn.createStatement()){
             final String createTable = "CREATE TABLE FILES (identifier VARCHAR(255) not NULL, path VARCHAR(500))"; //TODO len
             stmt.executeUpdate(createTable);
             logger.debug("Created table in given database...");
@@ -101,24 +99,21 @@ public class DBManager {
     }
 
     public void insert() throws Exception {
-
         if (!tableExists()) {
             logger.debug("Initializing table");
             init();
         }
 
         if (!getConnection()) {
+            logger.debug("Unable to get connection");
             return;
         }
 
         logger.debug("Inserting records into the table...");
 
-        final FileCrawler fileCrawler = new FileCrawler();
-
-        final Multimap<String, String> map = fileCrawler.getIndex(PATH);
-
+        final FileCrawler fileCrawler = new FileCrawler(PropsUtil.getProperty("PATH"));
+        final Multimap<String, String> map = fileCrawler.getIndex();
         final Set<String> keys = map.keySet();
-
 
         try (final Statement stmt = conn.createStatement()) {
 
@@ -144,12 +139,11 @@ public class DBManager {
                 logger.error("Error", e);
             }
         }
-
     }
 
     public boolean tableExists() {
-
         if (!getConnection()) {
+            logger.debug("Unable to get connection");
             return false;
         }
 
@@ -181,9 +175,9 @@ public class DBManager {
     public boolean getConnection() {
         try {
             Class.forName("org.h2.Driver");
-            conn = DriverManager.getConnection("jdbc:h2:D:/file_service/test", "sa", ""); //TODO db name, etc.
+            conn = DriverManager.getConnection("jdbc:h2:" + PropsUtil.getProperty("DB_PATH"), "sa", "");
         } catch (Exception e) {
-            logger.error("Error getting connection", e);
+            logger.error("Error getting db connection", e);
             return false;
         }
         return true;
@@ -193,7 +187,7 @@ public class DBManager {
         try {
             conn.close();
         } catch (SQLException e) {
-            logger.error("Error closing connection", e);
+            logger.error("Error closing db connection", e);
         }
     }
 }

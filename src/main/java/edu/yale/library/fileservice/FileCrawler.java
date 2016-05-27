@@ -16,9 +16,11 @@ public class FileCrawler {
 
     private final static Logger logger = getLogger(FileCrawler.class);
 
+    private String path;
+
     private final Multimap<String, String> map = ArrayListMultimap.create();
 
-    public Multimap<String, String> getIndex(final String path) throws IOException {
+    public Multimap<String, String> getIndex() throws IOException {
         logger.debug("Path:{} exists:{}", path, new File(path).exists());
         index(new File(path));
         logger.debug("Computed file map size:{}", map.size());
@@ -37,5 +39,9 @@ public class FileCrawler {
             final String absPath = sourceFile.getAbsolutePath();
             map.put(fileName, absPath);
         }
+    }
+
+    public FileCrawler(String path) {
+        this.path = path;
     }
 }
