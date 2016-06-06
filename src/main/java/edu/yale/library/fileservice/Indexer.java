@@ -22,7 +22,7 @@ public class Indexer {
         final DBManager dbManager = new DBManager();
         try {
             dbManager.insert();
-            return Response.status(200).build();
+            return Response.status(200).entity("Process complete.").build();
         } catch (Exception e) {
             logger.error("Error:", e);
         }

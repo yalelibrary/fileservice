@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileFilter;
 
 public class AcceptableFiles implements FileFilter {
+
     public boolean accept(File dir) {
         String path = dir.getAbsolutePath();
 
@@ -16,7 +17,6 @@ public class AcceptableFiles implements FileFilter {
         if (dir.isFile() && !(FilenameUtils.getExtension(path).equals("tif") || FilenameUtils.getExtension(path).equals("tiff"))) {
             return false;
         }
-
         return true;
     }
 }

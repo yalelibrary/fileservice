@@ -23,7 +23,7 @@ public class PropsUtil {
 
     static {
         try {
-            general = new PropertiesConfiguration("paths.properties");
+            general = new PropertiesConfiguration("application.properties");
         } catch (Exception e) {
             logger.error("Error setting property file", e);
         }

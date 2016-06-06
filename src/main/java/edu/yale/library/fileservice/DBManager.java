@@ -1,5 +1,7 @@
 package edu.yale.library.fileservice;
 
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 
@@ -11,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +27,9 @@ public class DBManager {
 
     private static Connection conn; //TODO check
 
-    private String path = PropsUtil.getProperty("PATH");
+    private String path = PropsUtil.getProperty("PATH"); //TODO move up
+
+    private String[] dirs = PropsUtil.getProperty("FOLDERS").split(","); //TODO move up
 
     public List<String> get(final String fileName) {
         if (!valid(fileName)) {
@@ -126,7 +131,7 @@ public class DBManager {
 
         logger.debug("Inserting records into the table...");
 
-        final FileCrawler fileCrawler = new FileCrawler(path);
+        final FileCrawler fileCrawler = new FileCrawler(path, dirs);
         final Multimap<String, String> map = fileCrawler.getIndex();
 
         if (map.size() == 0) {
@@ -154,6 +159,7 @@ public class DBManager {
                         logger.error("Error inserting:{}", s, e);
                     }
                 }
+                logger.debug("Done");
             }
         } catch (SQLException e) {
             logger.error("Error", e);
@@ -222,5 +228,7 @@ public class DBManager {
     private boolean valid(String s) {
         return s.matches("^[0-9]+$"); // only numbers allowed //TODO might have to accommodate others
     }
+
+
 }
 
