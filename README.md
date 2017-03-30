@@ -42,3 +42,7 @@ curl -X GET http://localhost:8080/fileservice/rest/search/get
 Or in the browser:
 
 http://smldr01.library.yale.edu:8080/fileservice/rest/search/10597409
+
+### Author
+
+Osman Din
