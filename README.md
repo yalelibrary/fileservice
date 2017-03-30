@@ -2,7 +2,9 @@
 
 Crawler/indexing web service for BRBL Tiff Finder Desktop GUI app. Basically, it indexes content on a share, and provides a RESTful service. When the user asks for a file name, say '101', it outputs the path '/usr/local/images/101.tif'.
 
-This service is essential for the desktop GUI to run.
+This service is essential for the desktop GUI to run. The GUI repo is here:
+
+https://github.com/yalelibrary/bulktransfer
 
 ### Build
 
