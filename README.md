@@ -1,13 +1,20 @@
-##File Service
+## File Service
 
-Crawler/indexing web service.
+Crawler/indexing web service for BRBL Tiff Finder Desktop GUI app. Basically, it indexes content on a share, and provides a RESTful service. When the user asks for a file name, say '101', it outputs the path '/usr/local/images/101.tif'.
 
-###Build
+This service is essential for the desktop GUI to run.
+
+### Build
+
+The application is packaged as a stanard Java Maven app.
+
+Change the path to the database (file db or db.mv.db) in path.properties. Also change the path to to the indexing folders in path.properties. You'll find both under resources directory.
+
 ```
 mvn clean install
 ```
 
-###Steps
+### Steps
 
 After renaming the .war to fileservice, deploy to Tomcat:
 
@@ -30,3 +37,6 @@ Confirm:
 curl -X GET http://localhost:8080/fileservice/rest/search/get
 
 ```
+Or in the browser:
+
+http://smldr01.library.yale.edu:8080/fileservice/rest/search/10597409
